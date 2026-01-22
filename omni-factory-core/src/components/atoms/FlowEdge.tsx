@@ -3,6 +3,7 @@ import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from 'reactflow
 
 interface FlowEdgeData {
   flowRate: number;
+  isRecycled?: boolean;
 }
 
 function FlowEdge({
@@ -36,7 +37,11 @@ function FlowEdge({
   let strokeWidth = 2;
   let strokeDasharray = '5,5';
 
-  if (flowRate > 0) {
+  if (data?.isRecycled) {
+    strokeColor = '#00FFFF'; // Cyan for Recycled Loops
+    strokeWidth = 3;
+    strokeDasharray = 'none'; // Loops are always active conceptually
+  } else if (flowRate > 0) {
     strokeDasharray = 'none';
 
     if (utilization >= 1.0) {

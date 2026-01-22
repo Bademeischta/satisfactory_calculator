@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useFactoryStore } from '@/store/useFactoryStore';
-import { Trash2, Network, Wand2, Share2 } from 'lucide-react';
+import { Trash2, Network, Wand2, Share2, BookOpen } from 'lucide-react';
 import { ProductionWizard } from '@/components/organisms/ProductionWizard';
 import { compressState } from '@/lib/compression';
+import { RecipePolicyManager } from '@/components/organisms/RecipePolicyManager';
 
 export function Toolbar() {
   const clearFactory = useFactoryStore((state) => state.clearFactory);
@@ -10,6 +11,7 @@ export function Toolbar() {
   const { nodes, edges } = useFactoryStore((state) => ({ nodes: state.nodes, edges: state.edges }));
 
   const [showWizard, setShowWizard] = useState(false);
+  const [showPolicies, setShowPolicies] = useState(false);
 
   const handleClear = () => {
     // eslint-disable-next-line no-alert
@@ -57,6 +59,17 @@ export function Toolbar() {
 
         <button
           type="button"
+          onClick={() => setShowPolicies(true)}
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm font-bold group hover:text-ficsit-orange"
+        >
+          <BookOpen className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span>Policies</span>
+        </button>
+
+        <div className="w-px bg-gray-700 h-6 my-auto" />
+
+        <button
+          type="button"
           onClick={layoutNodes}
           className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm font-bold group hover:text-ficsit-orange"
         >
@@ -77,6 +90,7 @@ export function Toolbar() {
       </div>
 
       {showWizard && <ProductionWizard onClose={() => setShowWizard(false)} />}
+      {showPolicies && <RecipePolicyManager onClose={() => setShowPolicies(false)} />}
     </>
   );
 }
