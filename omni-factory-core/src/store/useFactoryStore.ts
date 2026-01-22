@@ -11,11 +11,28 @@ interface FactoryState {
   removeNode: (id: string) => void;
   connectNodes: (sourceId: string, targetId: string, itemSlug: string) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
+  updateNodeData: (id: string, data: Partial<FactoryNode>) => void;
+  setEdgeFlowRates: (flowRates: Record<string, number>) => void;
 }
 
 export const useFactoryStore = create<FactoryState>((set) => ({
   nodes: [],
   edges: [],
+
+  setEdgeFlowRates: (flowRates) => {
+    set((state) => ({
+      edges: state.edges.map((edge) => ({
+        ...edge,
+        flowRate: flowRates[edge.id] ?? edge.flowRate,
+      })),
+    }));
+  },
+
+  updateNodeData: (id, data) => {
+    set((state) => ({
+      nodes: state.nodes.map((node) => (node.id === id ? { ...node, ...data } : node)),
+    }));
+  },
 
   addNode: (recipeId, position) => {
     set((state) => ({

@@ -12,6 +12,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useFactoryStore } from '@/store/useFactoryStore';
 import FactoryNode from '@/components/molecules/FactoryNode';
+import { useSolver } from '@/hooks/useSolver';
 
 // Define node types outside component to prevent re-creation
 const nodeTypes: NodeTypes = {
@@ -22,6 +23,9 @@ function FactoryCanvas() {
   const {
     nodes, edges, connectNodes, removeNode, updateNodePosition,
   } = useFactoryStore();
+
+  // Activate the Solver
+  useSolver();
 
   // Map Zustand store nodes to React Flow nodes
   const flowNodes: Node[] = useMemo(() => nodes.map((node) => ({
