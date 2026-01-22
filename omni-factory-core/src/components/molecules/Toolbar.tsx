@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useFactoryStore } from '@/store/useFactoryStore';
-import { Trash2, Network, Wand2, Share2, BookOpen } from 'lucide-react';
+import { Trash2, Network, Wand2, Share2, BookOpen, ShoppingCart } from 'lucide-react';
 import { ProductionWizard } from '@/components/organisms/ProductionWizard';
 import { compressState } from '@/lib/compression';
 import { RecipePolicyManager } from '@/components/organisms/RecipePolicyManager';
+import { ShoppingList } from '@/components/organisms/ShoppingList';
 
 export function Toolbar() {
   const clearFactory = useFactoryStore((state) => state.clearFactory);
@@ -12,6 +13,7 @@ export function Toolbar() {
 
   const [showWizard, setShowWizard] = useState(false);
   const [showPolicies, setShowPolicies] = useState(false);
+  const [showShoppingList, setShowShoppingList] = useState(false);
 
   const handleClear = () => {
     // eslint-disable-next-line no-alert
@@ -42,6 +44,17 @@ export function Toolbar() {
         >
           <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
           <span>Clear</span>
+        </button>
+
+        <div className="w-px bg-gray-700 h-6 my-auto" />
+
+        <button
+          type="button"
+          onClick={() => setShowShoppingList(true)}
+          className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm font-bold group hover:text-ficsit-orange"
+        >
+          <ShoppingCart className="w-4 h-4 group-hover:scale-110 transition-transform" />
+          <span>BOM</span>
         </button>
 
         <div className="w-px bg-gray-700 h-6 my-auto" />
@@ -91,6 +104,7 @@ export function Toolbar() {
 
       {showWizard && <ProductionWizard onClose={() => setShowWizard(false)} />}
       {showPolicies && <RecipePolicyManager onClose={() => setShowPolicies(false)} />}
+      {showShoppingList && <ShoppingList onClose={() => setShowShoppingList(false)} />}
     </>
   );
 }

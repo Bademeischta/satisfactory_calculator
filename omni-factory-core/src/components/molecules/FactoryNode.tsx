@@ -1,9 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { Settings } from 'lucide-react';
+import { Settings, Zap, AlertTriangle } from 'lucide-react';
 import { DB } from '@/lib/db';
 import { useFactoryStore } from '@/store/useFactoryStore';
 import { RecipeDefinition } from '@/types/data';
+import { useStore } from '@/hooks/useStore';
 
 interface FactoryNodeProps {
   id: string; // ReactFlow passes the node ID
@@ -19,12 +20,48 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
   const [showRecipeMenu, setShowRecipeMenu] = React.useState(false);
   const updateNodeData = useFactoryStore((state) => state.updateNodeData);
 
+  // Access store state for calculation
+  const edges = useStore(useFactoryStore, (state) => state.edges);
+  // We need simulation results too?
+  // Actually, we can derive "Required Rate" from edges (Target Output).
+
   let recipe: RecipeDefinition | undefined;
   try {
     recipe = DB.getRecipe(data.recipeId);
   } catch {
     recipe = undefined;
   }
+
+  // Calculate Machine Count and Efficiency
+  const stats = useMemo(() => {
+    if (!recipe || !edges) return { count: 1, utilization: 0, requiredFlow: 0 };
+
+    // 1. Calculate Required Flow (Sum of outgoing main product)
+    // Assume first product is main
+    const mainProduct = recipe.products[0];
+    if (!mainProduct) return { count: 1, utilization: 0, requiredFlow: 0 };
+
+    const outgoing = edges.filter(e => e.sourceNodeId === id && e.sourceHandle === mainProduct.itemSlug);
+    const requiredFlow = outgoing.reduce((acc, e) => acc + (e.flowRate || 0), 0);
+
+    // 2. Calculate Standard Rate per Machine
+    const standardRate = (mainProduct.amount * 60) / recipe.duration;
+    const ratePerMachine = standardRate * data.clockSpeed;
+
+    // 3. Machine Count
+    if (requiredFlow <= 0.01) return { count: 1, utilization: 0, requiredFlow: 0 };
+
+    const count = Math.ceil(requiredFlow / ratePerMachine);
+
+    // 4. Efficiency of Last Machine
+    // Total Capacity = count * ratePerMachine
+    // Used Capacity = requiredFlow
+    // If count > 1, first (count-1) are 100%. Last one is remainder.
+    const remainder = requiredFlow - ((count - 1) * ratePerMachine);
+    const utilization = (remainder / ratePerMachine) * 100;
+
+    return { count, utilization, requiredFlow };
+  }, [recipe, edges, id, data.clockSpeed]);
 
   // If recipe not found, render fallback
   if (!recipe) {
@@ -82,12 +119,30 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
       <div className="bg-[#2A2A2A] p-2 rounded-t-md flex items-center justify-between border-b border-ficsit-grey">
         <div className="flex items-center gap-2 font-bold text-sm">
           {/* Machine Icon Placeholder */}
-          <div className="w-6 h-6 bg-ficsit-orange rounded flex items-center justify-center text-xs text-black">
-             M
+          <div className="w-6 h-6 bg-ficsit-orange rounded flex items-center justify-center text-xs text-black font-mono">
+             {stats.count}x
           </div>
-          <span className="truncate">{recipe.name}</span>
+          <div className="flex flex-col">
+            <span className="truncate leading-tight">{recipe.name}</span>
+            {stats.count > 50 && (
+                <div className="flex items-center gap-1 text-[10px] text-red-400">
+                    <AlertTriangle size={10} />
+                    <span>Logistics Heavy</span>
+                </div>
+            )}
+          </div>
         </div>
-        <Settings className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" />
+        <div className="flex items-center gap-2">
+            {data.clockSpeed > 1.0 && (
+                <div className="flex gap-0.5">
+                    {[...Array(Math.min(3, Math.ceil((data.clockSpeed - 1) / 0.5)))].map((_, i) => (
+                         // eslint-disable-next-line react/no-array-index-key
+                         <Zap key={i} size={10} className="text-purple-400 fill-purple-400" />
+                    ))}
+                </div>
+            )}
+            <Settings className="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" />
+        </div>
       </div>
 
       {/* Body */}
@@ -149,11 +204,18 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
         {/* Footer: Efficiency Status */}
         <div className="mt-2 pt-2 border-t border-ficsit-grey flex justify-between items-center">
             <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${data.clockSpeed > 0 ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-red-500'}`} />
-                <span className="text-[10px] text-gray-400 uppercase">Status</span>
+                <div className={`w-2 h-2 rounded-full ${stats.utilization > 0 ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-red-500'}`} />
+                <span className="text-[10px] text-gray-400 uppercase">Efficiency</span>
             </div>
-            {/* We could show live efficiency here if passed via data, but for now just show clock setting */}
-            <span className="text-xs font-mono text-ficsit-orange">{(data.clockSpeed * 100).toFixed(0)}%</span>
+
+            <div className="text-right flex flex-col items-end">
+                <div className="text-xs font-mono text-ficsit-orange">
+                    {stats.count > 1
+                        ? `${stats.count - 1} @ 100%, 1 @ ${stats.utilization.toFixed(0)}%`
+                        : `${stats.utilization.toFixed(0)}%`
+                    }
+                </div>
+            </div>
         </div>
       </div>
     </div>
