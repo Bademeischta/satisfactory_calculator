@@ -32,6 +32,15 @@ function FlowEdge({
   const limit = 780;
   const utilization = flowRate / limit;
 
+  // Determine Belt Tier
+  let tierLabel = '';
+  if (flowRate <= 60) tierLabel = 'Mk.1';
+  else if (flowRate <= 120) tierLabel = 'Mk.2';
+  else if (flowRate <= 270) tierLabel = 'Mk.3';
+  else if (flowRate <= 480) tierLabel = 'Mk.4';
+  else if (flowRate <= 780) tierLabel = 'Mk.5';
+  else tierLabel = 'Mk.6+';
+
   // Visual Logic
   let strokeColor = '#555'; // Default inactive
   let strokeWidth = 2;
@@ -101,6 +110,7 @@ function FlowEdge({
           `}>
             <span>{flowRate.toFixed(1)}</span>
             <span className="text-[8px] opacity-70">/ {limit}</span>
+            {flowRate > 0 && <span className="bg-white/20 px-1 rounded text-[8px] ml-1">{tierLabel}</span>}
           </div>
         </div>
       </EdgeLabelRenderer>

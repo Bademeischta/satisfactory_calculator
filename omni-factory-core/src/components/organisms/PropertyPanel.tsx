@@ -106,12 +106,12 @@ export function PropertyPanel() {
         <div>
              <div className="flex justify-between items-center mb-2">
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-                <label className="text-xs font-bold uppercase text-gray-400">Clock Speed</label>
+                <label className="text-xs font-bold uppercase text-gray-400">Target Clock Speed</label>
                 <span className="text-ficsit-orange font-mono text-xs">{(localClock * 100).toFixed(0)}%</span>
              </div>
              <input
                 type="range"
-                min="0"
+                min="0.01"
                 max="2.5"
                 step="0.01"
                 value={localClock}
@@ -120,7 +120,7 @@ export function PropertyPanel() {
                 className="w-full h-1 bg-gray-600 rounded appearance-none cursor-pointer accent-ficsit-orange"
             />
             <div className="flex justify-between text-[10px] text-gray-500 mt-1 font-mono">
-                <span>0%</span>
+                <span>1%</span>
                 <span>100%</span>
                 <span>250%</span>
             </div>
