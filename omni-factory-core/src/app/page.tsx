@@ -2,17 +2,22 @@
 
 import React from 'react';
 import FactoryCanvas from '@/components/organisms/FactoryCanvas';
-import { NodePalette } from '@/components/organisms/NodePalette';
+import { BuilderSidebar } from '@/components/organisms/BuilderSidebar';
+import { PropertyPanel } from '@/components/organisms/PropertyPanel';
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-row">
-      <NodePalette />
+      {/* Left: Builder Sidebar */}
+      <BuilderSidebar />
 
-      {/* Full Screen Canvas */}
+      {/* Center: Canvas */}
       <div className="flex-1 h-screen relative">
         <FactoryCanvas />
       </div>
+
+      {/* Right: Property Panel */}
+      <PropertyPanel />
     </main>
   );
 }

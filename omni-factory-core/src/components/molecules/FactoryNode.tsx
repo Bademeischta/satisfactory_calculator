@@ -1,7 +1,6 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Settings } from 'lucide-react';
-import { useFactoryStore } from '@/store/useFactoryStore';
 import { DB } from '@/lib/db';
 import { RecipeDefinition } from '@/types/data';
 
@@ -14,6 +13,7 @@ interface FactoryNodeProps {
   selected?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
   let recipe: RecipeDefinition | undefined;
   try {
@@ -22,26 +22,7 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
     recipe = undefined;
   }
 
-  const updateNodeData = useFactoryStore((state) => state.updateNodeData);
-
-  // Local state for smooth slider interaction
-  const [localClockSpeed, setLocalClockSpeed] = useState(data.clockSpeed);
-
-  // Sync local state if external prop changes (e.g. undo/redo)
-  React.useEffect(() => {
-    setLocalClockSpeed(data.clockSpeed);
-  }, [data.clockSpeed]);
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalClockSpeed(parseFloat(e.target.value));
-  };
-
-  const handleSliderCommit = useCallback(() => {
-    // Only update store when user finishes dragging
-    if (localClockSpeed !== data.clockSpeed) {
-      updateNodeData(id, { clockSpeed: localClockSpeed });
-    }
-  }, [id, localClockSpeed, data.clockSpeed, updateNodeData]);
+  // Cleaned up logic: Slider moved to PropertyPanel
 
   // If recipe not found (shouldn't happen in strict mode but good for safety), render fallback
   if (!recipe) {
@@ -127,23 +108,14 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
             </div>
         </div>
 
-        {/* Footer: Clock Speed */}
-        <div className="mt-2 pt-2 border-t border-ficsit-grey">
-            <div className="flex justify-between text-xs mb-1">
-                <span className="text-ficsit-orange">Clock Speed</span>
-                <span>{(localClockSpeed * 100).toFixed(0)}%</span>
+        {/* Footer: Efficiency Status */}
+        <div className="mt-2 pt-2 border-t border-ficsit-grey flex justify-between items-center">
+            <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${data.clockSpeed > 0 ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-red-500'}`} />
+                <span className="text-[10px] text-gray-400 uppercase">Status</span>
             </div>
-            <input
-                type="range"
-                min="0"
-                max="2.5"
-                step="0.01"
-                value={localClockSpeed}
-                onChange={handleSliderChange}
-                onMouseUp={handleSliderCommit}
-                onTouchEnd={handleSliderCommit}
-                className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-ficsit-orange"
-            />
+            {/* We could show live efficiency here if passed via data, but for now just show clock setting */}
+            <span className="text-xs font-mono text-ficsit-orange">{(data.clockSpeed * 100).toFixed(0)}%</span>
         </div>
       </div>
     </div>
