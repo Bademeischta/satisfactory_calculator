@@ -26,6 +26,11 @@ export interface FactoryEdge {
 
   // Physical Limit of the transport medium (Belt/Pipe)
   limitRate?: number; // e.g., 60, 120, 300, 600, 1200
+
+  // Metadata for Visualization
+  data?: {
+    isRecycled?: boolean;
+  };
 }
 
 // -- Simulation Reality (Computed Results) --
