@@ -16,12 +16,15 @@ import 'reactflow/dist/style.css';
 import { useFactoryStore } from '@/store/useFactoryStore';
 import { useStore } from '@/hooks/useStore';
 import FactoryNode from '@/components/molecules/FactoryNode';
+import ResourceNode from '@/components/molecules/ResourceNode';
 import FlowEdge from '@/components/atoms/FlowEdge';
 import { useFactorySimulation } from '@/hooks/useFactorySimulation';
+import { ResourceManifest } from '@/components/organisms/ResourceManifest';
 
 // Define node and edge types outside component to prevent re-creation
 const nodeTypes: NodeTypes = {
   factoryNode: FactoryNode,
+  resourceNode: ResourceNode,
 };
 
 const edgeTypes: EdgeTypes = {
@@ -72,11 +75,13 @@ function FactoryCanvas() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const flowNodes: Node[] = useMemo(() => nodes.map((node) => ({
     id: node.id,
-    type: 'factoryNode',
+    type: node.type || 'factoryNode',
     position: node.position,
     data: {
       recipeId: node.recipeId,
       clockSpeed: node.clockSpeed,
+      machineTier: node.machineTier,
+      purity: node.purity,
     },
   })), [nodes]);
 
@@ -153,7 +158,8 @@ function FactoryCanvas() {
   );
 
   return (
-    <div className="w-full h-full bg-ficsit-dark">
+    <div className="w-full h-full bg-ficsit-dark relative">
+      <ResourceManifest />
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
