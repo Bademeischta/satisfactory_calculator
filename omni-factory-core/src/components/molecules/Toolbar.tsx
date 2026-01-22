@@ -9,7 +9,8 @@ import { ShoppingList } from '@/components/organisms/ShoppingList';
 export function Toolbar() {
   const clearFactory = useFactoryStore((state) => state.clearFactory);
   const layoutNodes = useFactoryStore((state) => state.layoutNodes);
-  const { nodes, edges } = useFactoryStore((state) => ({ nodes: state.nodes, edges: state.edges }));
+  const nodes = useFactoryStore((state) => state.nodes);
+  const edges = useFactoryStore((state) => state.edges);
 
   const [showWizard, setShowWizard] = useState(false);
   const [showPolicies, setShowPolicies] = useState(false);

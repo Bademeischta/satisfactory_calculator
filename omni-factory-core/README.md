@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Omni-Factory: The Ultimate Satisfactory Calculator
 
-## Getting Started
+**Welcome, Director.**
+You have assumed command of the FICSIT Omni-Factory project. This tool is designed to optimize production chains with ruthless efficiency.
 
-First, run the development server:
+## 🚀 Features
+*   **Production Wizard**: Auto-generate full factory chains from a single target item.
+*   **Intelligent Recycling**: Automatically detects and closes loop dependencies (e.g. Water, Fuel).
+*   **Construction Dashboard**: Real-time Machine counts, Bill of Materials, and Power Audits.
+*   **Overclocking Matrix**: Fine-tune individual nodes (1% - 250%) to save space and power.
+*   **Global Policies**: Batch-update recipes across the entire factory.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🛠 Troubleshooting Protocol
+If the system becomes unstable, follow these FICSIT-mandated procedures:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Hydration Mismatch
+*   **Symptom**: "Text content does not match server-rendered HTML".
+*   **Cause**: LocalStorage state differs from server initial state.
+*   **Fix**: The application uses a `useStore` hook to mitigate this. If it persists, refresh the page.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Infinite Render Loop
+*   **Symptom**: The browser tab freezes or crashes.
+*   **Cause**: Improper state selection in Zustand hooks creating new object references on every render.
+*   **Fix**: Ensure `useFactoryStore` selectors pick atomic values (e.g., `state.nodes`) rather than returning new objects.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### 3. "System Failure" Screen
+*   **Symptom**: A red "FICSIT SYSTEM FAILURE" screen appears.
+*   **Fix**: Click the **"INITIATE FACTORY RESET"** button. This will clear corrupted LocalStorage data and reload the application.
 
-## Learn More
+### 4. Next.js Version Mismatch
+*   **Symptom**: Odd build errors or missing features.
+*   **Fix**: Run `npm install next@latest` to align dependencies.
 
-To learn more about Next.js, take a look at the following resources:
+## 📦 Tech Stack
+*   **Framework**: Next.js 14 (App Router)
+*   **State**: Zustand (w/ Persistence)
+*   **Visuals**: React Flow, Tailwind CSS, Lucide Icons
+*   **Logic**: Custom LP Solver & Graph Algorithms
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+---
+*Compliance is mandatory. Efficiency is key.*

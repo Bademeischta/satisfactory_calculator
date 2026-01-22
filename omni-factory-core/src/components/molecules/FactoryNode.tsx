@@ -46,7 +46,7 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
 
     // 2. Calculate Standard Rate per Machine
     const standardRate = (mainProduct.amount * 60) / recipe.duration;
-    const ratePerMachine = standardRate * data.clockSpeed;
+    const ratePerMachine = standardRate * (data.clockSpeed); // clockSpeed is 0.01 - 2.5
 
     // 3. Machine Count
     if (requiredFlow <= 0.01) return { count: 1, utilization: 0, requiredFlow: 0 };
@@ -58,7 +58,9 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
     // Used Capacity = requiredFlow
     // If count > 1, first (count-1) are 100%. Last one is remainder.
     const remainder = requiredFlow - ((count - 1) * ratePerMachine);
-    const utilization = (remainder / ratePerMachine) * 100;
+    // If remainder is very close to ratePerMachine (within float error), treat as 100%
+    const isFull = Math.abs(remainder - ratePerMachine) < 0.001 || Math.abs(remainder) < 0.001;
+    const utilization = isFull ? 100 : (remainder / ratePerMachine) * 100;
 
     return { count, utilization, requiredFlow };
   }, [recipe, edges, id, data.clockSpeed]);
@@ -135,6 +137,7 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
         <div className="flex items-center gap-2">
             {data.clockSpeed > 1.0 && (
                 <div className="flex gap-0.5">
+                    {/* Power Shard Logic: 1 shard for <= 150%, 2 for <= 200%, 3 for > 200% */}
                     {[...Array(Math.min(3, Math.ceil((data.clockSpeed - 1) / 0.5)))].map((_, i) => (
                          // eslint-disable-next-line react/no-array-index-key
                          <Zap key={i} size={10} className="text-purple-400 fill-purple-400" />
