@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { FactoryNode, FactoryEdge, SimulationResult } from '@/types/factory';
+import { getLayoutedElements } from '@/lib/autoLayout';
+import { decompressState } from '@/lib/compression';
 
 interface FactoryState {
   // User Intent
@@ -20,6 +22,9 @@ interface FactoryState {
   connectNodes: (sourceId: string, targetId: string, itemSlug: string) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   updateNodeData: (id: string, data: Partial<FactoryNode>) => void;
+  setFactoryGraph: (nodes: FactoryNode[], edges: FactoryEdge[]) => void;
+  layoutNodes: () => void;
+  importStateFromUrl: (urlSearch: string) => boolean;
 
   // Set Simulation Result
   setSimulationResult: (result: SimulationResult) => void;
@@ -27,7 +32,7 @@ interface FactoryState {
 
 export const useFactoryStore = create<FactoryState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       nodes: [],
       edges: [],
       simulation: null,
@@ -93,6 +98,29 @@ export const useFactoryStore = create<FactoryState>()(
         set((state) => ({
           nodes: state.nodes.map((node) => (node.id === id ? { ...node, position } : node)),
         }));
+      },
+
+      setFactoryGraph: (nodes, edges) => {
+        set({ nodes, edges, selectedNodeId: null, simulation: null });
+      },
+
+      layoutNodes: () => {
+        const { nodes, edges } = get();
+        const layouted = getLayoutedElements(nodes, edges);
+        set({ nodes: [...layouted.nodes], edges: [...layouted.edges] });
+      },
+
+      importStateFromUrl: (urlSearch: string) => {
+        const params = new URLSearchParams(urlSearch);
+        const stateStr = params.get('state');
+        if (stateStr) {
+          const result = decompressState(stateStr);
+          if (result) {
+            set({ nodes: result.nodes, edges: result.edges, selectedNodeId: null, simulation: null });
+            return true;
+          }
+        }
+        return false;
       },
     }),
     {
