@@ -1,10 +1,12 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Settings } from 'lucide-react';
 import { Recipe } from '@/types/factory';
 import { RECIPE_DB } from '@/data/sample-recipes';
+import { useFactoryStore } from '@/store/useFactoryStore';
 
 interface FactoryNodeProps {
+  id: string; // ReactFlow passes the node ID
   data: {
     recipeId: string;
     clockSpeed: number;
@@ -12,8 +14,28 @@ interface FactoryNodeProps {
   selected?: boolean;
 }
 
-function FactoryNode({ data, selected = false }: FactoryNodeProps) {
+function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
   const recipe: Recipe | undefined = RECIPE_DB[data.recipeId];
+  const updateNodeData = useFactoryStore((state) => state.updateNodeData);
+
+  // Local state for smooth slider interaction
+  const [localClockSpeed, setLocalClockSpeed] = useState(data.clockSpeed);
+
+  // Sync local state if external prop changes (e.g. undo/redo)
+  React.useEffect(() => {
+    setLocalClockSpeed(data.clockSpeed);
+  }, [data.clockSpeed]);
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalClockSpeed(parseFloat(e.target.value));
+  };
+
+  const handleSliderCommit = useCallback(() => {
+    // Only update store when user finishes dragging
+    if (localClockSpeed !== data.clockSpeed) {
+      updateNodeData(id, { clockSpeed: localClockSpeed });
+    }
+  }, [id, localClockSpeed, data.clockSpeed, updateNodeData]);
 
   // If recipe not found (shouldn't happen in strict mode but good for safety), render fallback
   if (!recipe) {
@@ -103,14 +125,17 @@ function FactoryNode({ data, selected = false }: FactoryNodeProps) {
         <div className="mt-2 pt-2 border-t border-ficsit-grey">
             <div className="flex justify-between text-xs mb-1">
                 <span className="text-ficsit-orange">Clock Speed</span>
-                <span>{(data.clockSpeed * 100).toFixed(0)}%</span>
+                <span>{(localClockSpeed * 100).toFixed(0)}%</span>
             </div>
             <input
                 type="range"
                 min="0"
                 max="2.5"
                 step="0.01"
-                defaultValue={data.clockSpeed}
+                value={localClockSpeed}
+                onChange={handleSliderChange}
+                onMouseUp={handleSliderCommit}
+                onTouchEnd={handleSliderCommit}
                 className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-ficsit-orange"
             />
         </div>
@@ -119,7 +144,7 @@ function FactoryNode({ data, selected = false }: FactoryNodeProps) {
   );
 }
 
-// Add defaultProps to satisfy react/require-default-props
+// Ensure defaultProps are defined if using React Types, though functional default params cover runtime.
 FactoryNode.defaultProps = {
   selected: false,
 };
