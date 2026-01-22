@@ -9,10 +9,12 @@ interface FactoryState {
 
   // Simulation Reality
   simulation: SimulationResult | null;
+  selectedNodeId: string | null;
 
   // Actions
   addNode: (recipeId: string, position: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
+  selectNode: (id: string | null) => void;
   connectNodes: (sourceId: string, targetId: string, itemSlug: string) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   updateNodeData: (id: string, data: Partial<FactoryNode>) => void;
@@ -25,6 +27,11 @@ export const useFactoryStore = create<FactoryState>((set) => ({
   nodes: [],
   edges: [],
   simulation: null,
+  selectedNodeId: null,
+
+  selectNode: (id) => {
+    set({ selectedNodeId: id });
+  },
 
   setSimulationResult: (result) => {
     set({ simulation: result });

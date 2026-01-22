@@ -10,6 +10,7 @@ import ReactFlow, {
   NodeChange,
   EdgeTypes,
   ReactFlowInstance,
+  OnSelectionChangeParams,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useFactoryStore } from '@/store/useFactoryStore';
@@ -28,7 +29,7 @@ const edgeTypes: EdgeTypes = {
 
 function FactoryCanvas() {
   const {
-    nodes, edges, connectNodes, removeNode, updateNodePosition, addNode,
+    nodes, edges, connectNodes, removeNode, updateNodePosition, addNode, selectNode,
   } = useFactoryStore();
 
   // Activate the Solver
@@ -91,6 +92,14 @@ function FactoryCanvas() {
     [reactFlowInstance, addNode],
   );
 
+  const onSelectionChange = useCallback((params: OnSelectionChangeParams) => {
+    // We only care about single node selection for the property panel for now
+    if (params.nodes.length > 0) {
+        selectNode(params.nodes[0].id);
+    } else {
+        selectNode(null);
+    }
+  }, [selectNode]);
 
   const onNodesDelete = useCallback((nodesToDelete: Node[]) => {
       nodesToDelete.forEach((node) => {
@@ -120,6 +129,7 @@ function FactoryCanvas() {
         onConnect={onConnect}
         onNodesDelete={onNodesDelete}
         onNodesChange={onNodesChange}
+        onSelectionChange={onSelectionChange}
         onInit={setReactFlowInstance}
         onDrop={onDrop}
         onDragOver={onDragOver}
