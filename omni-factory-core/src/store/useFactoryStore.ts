@@ -10,6 +10,7 @@ interface FactoryState {
   addNode: (recipeId: string, position: { x: number; y: number }) => void;
   removeNode: (id: string) => void;
   connectNodes: (sourceId: string, targetId: string, itemSlug: string) => void;
+  updateNodePosition: (id: string, position: { x: number; y: number }) => void;
 }
 
 export const useFactoryStore = create<FactoryState>((set) => ({
@@ -51,6 +52,12 @@ export const useFactoryStore = create<FactoryState>((set) => ({
           flowRate: 0, // Initial flow rate is 0, to be calculated by solver
         },
       ],
+    }));
+  },
+
+  updateNodePosition: (id, position) => {
+    set((state) => ({
+      nodes: state.nodes.map((node) => (node.id === id ? { ...node, position } : node)),
     }));
   },
 }));
