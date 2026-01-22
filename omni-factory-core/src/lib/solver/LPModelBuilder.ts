@@ -49,6 +49,38 @@ export class LPModelBuilder {
    */
   private buildNodeVariables() {
     this.nodes.forEach((node) => {
+      // Resource Node Logic
+      if (node.type === 'resourceNode') {
+          // It doesn't have a recipe. It has a direct output capacity.
+          // Capacity = Base * Tier * Purity * Clock
+          // We model it as a variable "node_id" representing ACTUAL Extraction Rate.
+          // Constraint: node_id <= Capacity.
+
+          let base = 60;
+          let tierMult = 1;
+          const itemSlug = node.recipeId; // used as slug
+
+          if (itemSlug === 'desc_water') base = 120;
+          else if (itemSlug === 'desc_liquid_oil' || itemSlug === 'desc_nitrogen_gas') base = 60;
+
+          if (node.machineTier === 2) tierMult = 2;
+          if (node.machineTier === 3) tierMult = 4;
+
+          const purity = (itemSlug === 'desc_water') ? 1.0 : (node.purity || 1.0);
+
+          const capacity = base * tierMult * purity * node.clockSpeed;
+
+          this.model.variables[node.id] = {
+              [`node_${node.id}_capacity`]: 1,
+              // It contributes to the SOURCE Constraint of the edges connected to it?
+              // See buildEdgeConstraints logic for outputs.
+          };
+
+          this.model.constraints[`node_${node.id}_capacity`] = { max: capacity };
+          return;
+      }
+
+      // Standard Factory Node Logic
       try {
         // Just verify existence
         DB.getRecipe(node.recipeId);
@@ -120,6 +152,20 @@ export class LPModelBuilder {
 
     // Connect Nodes to Edges
     this.nodes.forEach(node => {
+        // Handle Resource Node Outputs
+        if (node.type === 'resourceNode') {
+            const itemSlug = node.recipeId;
+            const constraintName = `balance_source_${node.id}_${itemSlug}`;
+
+            // ResourceNode Variable represents "Items/Min Extracted".
+            // So it relaxes the constraint by -1 per unit.
+            // Sum(EdgeFlow) - ExtractionRate <= 0
+
+            this.model.variables[node.id][constraintName] = -1;
+            this.model.constraints[constraintName] = { max: 0 };
+            return;
+        }
+
         let recipe;
         try {
             recipe = DB.getRecipe(node.recipeId);

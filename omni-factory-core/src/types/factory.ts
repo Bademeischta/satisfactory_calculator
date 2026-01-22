@@ -5,12 +5,16 @@
 
 // -- User Intent (Graph Topology) --
 
+export type NodeType = 'factoryNode' | 'resourceNode';
+
 export interface FactoryNode {
   id: string; // UUID
+  type?: NodeType; // Defaults to 'factoryNode' if undefined for backward compatibility
   position: { x: number; y: number };
-  recipeId: string;
+  recipeId: string; // For ResourceNode, this acts as the "Item Produced" (e.g. 'desc_iron_ore') or we use a special prefix
   clockSpeed: number; // 1.0 = 100%, 2.5 = 250%
   machineTier?: number; // e.g., Mk.1 vs Mk.2 Miner
+  purity?: number; // 0.5 (Impure), 1.0 (Normal), 2.0 (Pure) - Specific to ResourceNode
 
   // User overrides/constraints
   targetOutput?: number; // "I want 10/min from this specific node"

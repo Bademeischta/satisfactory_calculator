@@ -12,8 +12,9 @@ interface PlannedGraph {
  * Generates a factory graph to produce a target item amount.
  * @param targetItemSlug The item to produce (e.g. "reinforced-iron-plate")
  * @param targetAmount The amount per minute (e.g. 10)
+ * @param includeResources Whether to recursively create Resource Nodes at the bottom of the tree
  */
-export function planProduction(targetItemSlug: string, targetAmount: number): PlannedGraph {
+export function planProduction(targetItemSlug: string, targetAmount: number, includeResources: boolean = false): PlannedGraph {
   const nodes: FactoryNode[] = [];
   const edges: FactoryEdge[] = [];
 
@@ -38,23 +39,44 @@ export function planProduction(targetItemSlug: string, targetAmount: number): Pl
 
     // 2. Base Case: No recipe found (Raw Resource or Leaf)
     if (!chosenRecipe) {
-        // If it's a raw resource, we might want to place a "Miner" if possible.
-        // But if DB has no recipe, it's truly a leaf (or we don't know how to make it).
-        // Let's check if it's a raw resource like 'iron-ore'.
-        // Miners have recipes too usually.
-        // If no recipe, we create a specialized "Input Node" (visual only) or just stop?
-        // The prompt says "Stop when reaching raw resources (Ore/Oil/Water)".
-        // And "return a fully connected graph".
-        // Let's create a node that acts as a source.
-        // We will make a node with no recipe? Or a dummy recipe?
-        // FactoryNode requires `recipeId`.
-        // We can't create a node without a recipeId that maps to DB.
-        // So if no recipe exists, we return null?
-        // Or we assume the caller provides it?
-        // Wait, 'iron-ore' IS produced by 'Recipe_IronOre'.
-        // If DB.getRecipesByProduct('iron-ore') returns [], then maybe our DB is incomplete or it's a World Item.
-        // Let's assume we stop and DO NOT create a node if we can't make it.
-        // The parent node will have an open input.
+        // If it's a raw resource and includeResources is true, create a Resource Node.
+        if (includeResources) {
+            // Check if it's a valid resource type we support (Mock check or list check)
+            // ResourceNode supports: iron-ore, copper-ore, coal, stone, limestone, caterium-ore, raw-quartz, sulfur, bauxite, uranium, water, oil, nitrogen-gas
+            const supportedResources = [
+                'desc_iron_ore', 'desc_copper_ore', 'desc_coal', 'desc_stone', 'desc_limestone',
+                'desc_caterium_ore', 'desc_raw_quartz', 'desc_sulfur', 'desc_bauxite', 'desc_uranium',
+                'desc_water', 'desc_liquid_oil', 'desc_nitrogen_gas'
+            ];
+
+            if (supportedResources.includes(itemSlug)) {
+                const nodeId = uuidv4();
+
+                // Determine Clock Speed needed to match amount
+                // Base Rate = 60 (Normal Mk1)
+                // If amount = 120, we need Clock 2.0 (200%).
+                // Or user can upgrade tier later.
+                // Let's default to Mk.1 Normal (60/m).
+                let base = 60;
+                if (itemSlug === 'desc_water') base = 120;
+
+                const clockSpeed = amount / base;
+
+                const node: FactoryNode = {
+                    id: nodeId,
+                    type: 'resourceNode',
+                    position: { x: 0, y: 0 },
+                    recipeId: itemSlug, // Slug is the ID for resource node
+                    clockSpeed,
+                    machineTier: 1,
+                    purity: 1.0
+                };
+
+                nodes.push(node);
+                return nodeId;
+            }
+        }
+
         return null;
     }
 
