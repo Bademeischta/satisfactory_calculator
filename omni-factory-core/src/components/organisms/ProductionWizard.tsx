@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { X, Zap } from 'lucide-react';
+import { X, Zap, Pickaxe } from 'lucide-react'; // Pickaxe für Miner Icon
 import { useFactoryStore } from '@/store/useFactoryStore';
 import { DB } from '@/lib/db';
 import { planProduction } from '@/lib/solver/productionPlanner';
+// Stellen Sie sicher, dass closeLoops existiert (Phase 9), sonst diese Zeile entfernen:
+// import { closeLoops } from '@/lib/solver/loopCloser'; 
 
 interface ProductionWizardProps {
   onClose: () => void;
@@ -12,6 +14,8 @@ export function ProductionWizard({ onClose }: ProductionWizardProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [amount, setAmount] = useState(10);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  
+  // Phase 11: Neuer State für Ressourcen
   const [includeResources, setIncludeResources] = useState(false);
 
   const setFactoryGraph = useFactoryStore((state) => state.setFactoryGraph);
@@ -19,14 +23,10 @@ export function ProductionWizard({ onClose }: ProductionWizardProps) {
 
   // Filter items (memoized)
   const filteredItems = useMemo(() => {
-    // We only want items that can be produced (have recipes)
-    // But DB.getAllRecipes() returns recipes.
-    // Let's get all recipes, map to products, unique them.
     const allRecipes = DB.getAllRecipes();
     const produceableItems = new Set<string>();
     allRecipes.forEach(r => r.products.forEach(p => produceableItems.add(p.itemSlug)));
 
-    // Now get ItemDefinitions
     const items = Array.from(produceableItems).map(slug => {
       try {
         return DB.getItem(slug);
@@ -35,7 +35,7 @@ export function ProductionWizard({ onClose }: ProductionWizardProps) {
       }
     }).filter(i => i !== null);
 
-    if (!searchTerm) return items.slice(0, 20); // Show first 20 default
+    if (!searchTerm) return items.slice(0, 20);
 
     return items.filter(item =>
       item!.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -45,53 +45,20 @@ export function ProductionWizard({ onClose }: ProductionWizardProps) {
   const handleBuild = () => {
     if (!selectedItem) return;
 
-    // 1. Generate Graph
-    const graph = planProduction(selectedItem, amount, includeResources);
+    // 1. Generate Graph (Phase 11 Update: mit includeResources Parameter)
+    // Hinweis: Stellen Sie sicher, dass planProduction in 'productionPlanner.ts' 3 Argumente akzeptiert!
+    let graph = planProduction(selectedItem, amount, includeResources);
 
-    // 2. Close Loops (Intelligent Recycling)
-    // Note: If resource nodes are included, we might have fewer loops to close or different ones?
-    // Close loops logic still applies for byproducts.
-    // import { closeLoops } from '@/lib/solver/loopCloser'; // Wait, I need to import this if I use it.
-    // The previous code had it imported?
-    // Let's check imports.
-
-    // We will just update planProduction call. The closeLoops call was in previous step but my read_file didn't show it?
-    // Ah, I see `planProduction` import but NOT `closeLoops` in the `read_file` output above.
-    // Why did `read_file` miss it? Maybe I edited it in previous step but the file I read now is older?
-    // No, `read_file` reads current state.
-    // Wait, in Phase 9 I added `closeLoops`.
-    // Did I fail to write it?
-    // I called `replace_with_git_merge_diff` in Phase 9.
-    // Let's assume it IS there or I need to add it back if I overwrote it?
-    // The `read_file` shows: `import { planProduction } from '@/lib/solver/productionPlanner';`
-    // It DOES NOT show `closeLoops`.
-    // It seems my Phase 9 edit might have failed or been reverted?
-    // Or I am misreading the `read_file` output.
-    // Lines 1-6:
-    // import React...
-    // import { X, Zap }...
-    // import { useFactoryStore }...
-    // import { DB }...
-    // import { planProduction }...
-
-    // So `closeLoops` is missing.
-    // I will re-add it if needed.
-    // But for now, I just want to pass `includeResources` to `planProduction`.
-
-    // Actually, I should probably restore `closeLoops` if I want to be safe, or just stick to the requested task.
-    // Task 4 says: Update `ProductionWizard.tsx`: Add checkbox.
-    // I will assume `closeLoops` should be there.
-
-    const graph = planProduction(selectedItem, amount, includeResources);
+    // Phase 9: Loop Closer Integration (Optional, falls implementiert)
+    // graph = closeLoops(graph.nodes, graph.edges);
 
     // 2. Set Store
     setFactoryGraph(graph.nodes, graph.edges);
 
     // 3. Layout
-    // We need to wait for state update? Zustand is sync usually for this.
     setTimeout(() => {
         layoutNodes();
-    }, 50); // Small tick to ensure nodes are in store
+    }, 50);
 
     onClose();
   };
@@ -134,7 +101,6 @@ export function ProductionWizard({ onClose }: ProductionWizardProps) {
                   className={`w-full text-left px-3 py-2 cursor-pointer text-sm flex items-center gap-2 hover:bg-white/10 ${selectedItem === item!.slug ? 'bg-ficsit-orange/20 text-ficsit-orange' : ''}`}
                   onClick={() => setSelectedItem(item!.slug)}
                 >
-                  {/* Icon? We don't have images loaded, just text */}
                   <span>{item!.name}</span>
                 </button>
               ))}
@@ -158,17 +124,19 @@ export function ProductionWizard({ onClose }: ProductionWizardProps) {
              />
           </div>
 
-          {/* Options */}
-          <div className="flex items-center gap-2">
-              <input
-                 id="include-resources"
-                 type="checkbox"
-                 checked={includeResources}
-                 onChange={(e) => setIncludeResources(e.target.checked)}
-                 className="w-4 h-4 rounded border-gray-600 bg-black/50 text-ficsit-orange focus:ring-ficsit-orange"
-              />
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-              <label htmlFor="include-resources" className="text-sm text-gray-300">Include Resource Nodes</label>
+          {/* Phase 11: Include Resources Checkbox */}
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              id="include-resources"
+              type="checkbox"
+              className="w-4 h-4 accent-ficsit-orange cursor-pointer"
+              checked={includeResources}
+              onChange={(e) => setIncludeResources(e.target.checked)}
+            />
+            <label htmlFor="include-resources" className="text-sm text-gray-300 cursor-pointer select-none flex items-center gap-2">
+              <Pickaxe size={16} className={includeResources ? "text-ficsit-orange" : "text-gray-500"} />
+              Include Raw Resource Nodes (Miners)
+            </label>
           </div>
 
           <button
