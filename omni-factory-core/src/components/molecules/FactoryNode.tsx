@@ -1,9 +1,9 @@
 import React, { memo, useState, useCallback } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Settings } from 'lucide-react';
-import { Recipe } from '@/types/factory';
-import { RECIPE_DB } from '@/data/sample-recipes';
 import { useFactoryStore } from '@/store/useFactoryStore';
+import { DB } from '@/lib/db';
+import { RecipeDefinition } from '@/types/data';
 
 interface FactoryNodeProps {
   id: string; // ReactFlow passes the node ID
@@ -15,7 +15,13 @@ interface FactoryNodeProps {
 }
 
 function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
-  const recipe: Recipe | undefined = RECIPE_DB[data.recipeId];
+  let recipe: RecipeDefinition | undefined;
+  try {
+    recipe = DB.getRecipe(data.recipeId);
+  } catch {
+    recipe = undefined;
+  }
+
   const updateNodeData = useFactoryStore((state) => state.updateNodeData);
 
   // Local state for smooth slider interaction

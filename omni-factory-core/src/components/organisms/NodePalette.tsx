@@ -1,8 +1,9 @@
 import React from 'react';
-import { RECIPE_DB } from '@/data/sample-recipes';
 import { LayoutGrid } from 'lucide-react';
+import { DB } from '@/lib/db';
 
 export function NodePalette() {
+  const recipes = DB.getAllRecipes();
   const onDragStart = (event: React.DragEvent, recipeId: string) => {
     event.dataTransfer.setData('application/reactflow', recipeId);
     // eslint-disable-next-line no-param-reassign
@@ -17,7 +18,7 @@ export function NodePalette() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-        {Object.values(RECIPE_DB).map((recipe) => (
+        {recipes.map((recipe) => (
           <div
             key={recipe.id}
             onDragStart={(event) => onDragStart(event, recipe.id)}

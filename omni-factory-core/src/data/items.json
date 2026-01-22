@@ -1,0 +1,101 @@
+{
+  "desc_iron_ore": {
+    "slug": "desc_iron_ore",
+    "name": "Iron Ore",
+    "description": "Raw iron.",
+    "stackSize": 100,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_iron_ore.png"
+  },
+  "desc_iron_ingot": {
+    "slug": "desc_iron_ingot",
+    "name": "Iron Ingot",
+    "description": "Refined iron.",
+    "stackSize": 100,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_iron_ingot.png"
+  },
+  "desc_iron_plate": {
+    "slug": "desc_iron_plate",
+    "name": "Iron Plate",
+    "description": "Basic plate.",
+    "stackSize": 100,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_iron_plate.png"
+  },
+  "desc_iron_rod": {
+    "slug": "desc_iron_rod",
+    "name": "Iron Rod",
+    "description": "Basic rod.",
+    "stackSize": 100,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_iron_rod.png"
+  },
+  "desc_screw": {
+    "slug": "desc_screw",
+    "name": "Screw",
+    "description": "Basic screw.",
+    "stackSize": 500,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_screw.png"
+  },
+  "desc_reinforced_iron_plate": {
+    "slug": "desc_reinforced_iron_plate",
+    "name": "Reinforced Iron Plate",
+    "description": "Stronger.",
+    "stackSize": 100,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_reinforced_iron_plate.png"
+  },
+  "desc_constructor": {
+    "slug": "desc_constructor",
+    "name": "Constructor",
+    "description": "Building.",
+    "stackSize": 1,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_constructor.png"
+  },
+  "desc_smelter": {
+    "slug": "desc_smelter",
+    "name": "Smelter",
+    "description": "Building.",
+    "stackSize": 1,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_smelter.png"
+  },
+  "desc_assembler": {
+    "slug": "desc_assembler",
+    "name": "Assembler",
+    "description": "Building.",
+    "stackSize": 1,
+    "sinkPoints": 0,
+    "energyValue": 0,
+    "radioactiveDecay": 0,
+    "liquid": false,
+    "iconPath": "/icons/desc_assembler.png"
+  }
+}

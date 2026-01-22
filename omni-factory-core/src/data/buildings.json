@@ -1,0 +1,44 @@
+{
+  "build_smelter": {
+    "slug": "build_smelter",
+    "name": "Smelter",
+    "description": "Factory building.",
+    "powerConsumption": 4,
+    "powerProduction": 0,
+    "manufacturingSpeed": 1,
+    "dimensions": {
+      "x": 10,
+      "y": 10,
+      "z": 10
+    },
+    "iconPath": "/icons/build_smelter.png"
+  },
+  "build_constructor": {
+    "slug": "build_constructor",
+    "name": "Constructor",
+    "description": "Factory building.",
+    "powerConsumption": 4,
+    "powerProduction": 0,
+    "manufacturingSpeed": 1,
+    "dimensions": {
+      "x": 10,
+      "y": 10,
+      "z": 10
+    },
+    "iconPath": "/icons/build_constructor.png"
+  },
+  "build_assembler": {
+    "slug": "build_assembler",
+    "name": "Assembler",
+    "description": "Factory building.",
+    "powerConsumption": 15,
+    "powerProduction": 0,
+    "manufacturingSpeed": 1,
+    "dimensions": {
+      "x": 10,
+      "y": 10,
+      "z": 10
+    },
+    "iconPath": "/icons/build_assembler.png"
+  }
+}
