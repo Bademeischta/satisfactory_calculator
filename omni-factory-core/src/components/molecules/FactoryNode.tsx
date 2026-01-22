@@ -144,9 +144,4 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
   );
 }
 
-// Ensure defaultProps are defined if using React Types, though functional default params cover runtime.
-FactoryNode.defaultProps = {
-  selected: false,
-};
-
 export default memo(FactoryNode);

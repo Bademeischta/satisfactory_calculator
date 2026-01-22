@@ -8,24 +8,33 @@ import ReactFlow, {
   MiniMap,
   NodeTypes,
   NodeChange,
+  EdgeTypes,
+  ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useFactoryStore } from '@/store/useFactoryStore';
 import FactoryNode from '@/components/molecules/FactoryNode';
+import FlowEdge from '@/components/atoms/FlowEdge';
 import { useSolver } from '@/hooks/useSolver';
 
-// Define node types outside component to prevent re-creation
+// Define node and edge types outside component to prevent re-creation
 const nodeTypes: NodeTypes = {
   factoryNode: FactoryNode,
 };
 
+const edgeTypes: EdgeTypes = {
+  flowEdge: FlowEdge,
+};
+
 function FactoryCanvas() {
   const {
-    nodes, edges, connectNodes, removeNode, updateNodePosition,
+    nodes, edges, connectNodes, removeNode, updateNodePosition, addNode,
   } = useFactoryStore();
 
   // Activate the Solver
   useSolver();
+
+  const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
 
   // Map Zustand store nodes to React Flow nodes
   const flowNodes: Node[] = useMemo(() => nodes.map((node) => ({
@@ -45,8 +54,9 @@ function FactoryCanvas() {
     target: edge.targetNodeId,
     sourceHandle: edge.itemSlug, // We used itemSlug as handle ID in FactoryNode
     targetHandle: edge.itemSlug,
-    animated: true,
-    style: { stroke: '#FA9549', strokeWidth: 2 },
+    type: 'flowEdge',
+    animated: edge.flowRate > 0, // Fallback for standard edge if type fails, but FlowEdge handles visual
+    data: { flowRate: edge.flowRate },
   })), [edges]);
 
   const onConnect = useCallback((params: Connection) => {
@@ -55,6 +65,31 @@ function FactoryCanvas() {
         connectNodes(params.source, params.target, params.sourceHandle);
     }
   }, [connectNodes]);
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    // eslint-disable-next-line no-param-reassign
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+
+      if (!reactFlowInstance) return;
+
+      const recipeId = event.dataTransfer.getData('application/reactflow');
+      if (!recipeId) return;
+
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      addNode(recipeId, position);
+    },
+    [reactFlowInstance, addNode],
+  );
 
 
   const onNodesDelete = useCallback((nodesToDelete: Node[]) => {
@@ -81,9 +116,13 @@ function FactoryCanvas() {
         nodes={flowNodes}
         edges={flowEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onConnect={onConnect}
         onNodesDelete={onNodesDelete}
         onNodesChange={onNodesChange}
+        onInit={setReactFlowInstance}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
         fitView
       >
         <Background color="#333" gap={16} size={1} />
