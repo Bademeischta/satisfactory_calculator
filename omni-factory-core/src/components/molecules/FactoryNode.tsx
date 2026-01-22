@@ -46,23 +46,22 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
 
     // 2. Calculate Standard Rate per Machine
     const standardRate = (mainProduct.amount * 60) / recipe.duration;
-    const ratePerMachine = standardRate * (data.clockSpeed); // clockSpeed is 0.01 - 2.5
+
+    // Hard Cap Clock Speed at 2.5 (250%) for calculation
+    const effectiveClock = Math.min(data.clockSpeed, 2.5);
+    const ratePerMachine = standardRate * effectiveClock;
 
     // 3. Machine Count
-    if (requiredFlow <= 0.01) return { count: 1, utilization: 0, requiredFlow: 0 };
+    if (requiredFlow <= 0.01) return { count: 1, utilization: 0, requiredFlow: 0, effectiveClock };
 
     const count = Math.ceil(requiredFlow / ratePerMachine);
 
     // 4. Efficiency of Last Machine
-    // Total Capacity = count * ratePerMachine
-    // Used Capacity = requiredFlow
-    // If count > 1, first (count-1) are 100%. Last one is remainder.
     const remainder = requiredFlow - ((count - 1) * ratePerMachine);
-    // If remainder is very close to ratePerMachine (within float error), treat as 100%
     const isFull = Math.abs(remainder - ratePerMachine) < 0.001 || Math.abs(remainder) < 0.001;
     const utilization = isFull ? 100 : (remainder / ratePerMachine) * 100;
 
-    return { count, utilization, requiredFlow };
+    return { count, utilization, requiredFlow, effectiveClock };
   }, [recipe, edges, id, data.clockSpeed]);
 
   // If recipe not found, render fallback
@@ -126,19 +125,20 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
           </div>
           <div className="flex flex-col">
             <span className="truncate leading-tight">{recipe.name}</span>
-            {stats.count > 50 && (
-                <div className="flex items-center gap-1 text-[10px] text-red-400">
-                    <AlertTriangle size={10} />
-                    <span>Logistics Heavy</span>
-                </div>
-            )}
+            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                {stats.requiredFlow > 780 && (
+                    <span className="text-red-500 font-bold flex items-center gap-0.5">
+                        <AlertTriangle size={8} /> {stats.requiredFlow.toFixed(0)}/m
+                    </span>
+                )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
-            {data.clockSpeed > 1.0 && (
+            {stats.effectiveClock > 1.0 && (
                 <div className="flex gap-0.5">
                     {/* Power Shard Logic: 1 shard for <= 150%, 2 for <= 200%, 3 for > 200% */}
-                    {[...Array(Math.min(3, Math.ceil((data.clockSpeed - 1) / 0.5)))].map((_, i) => (
+                    {[...Array(Math.min(3, Math.ceil((stats.effectiveClock - 1) / 0.5)))].map((_, i) => (
                          // eslint-disable-next-line react/no-array-index-key
                          <Zap key={i} size={10} className="text-purple-400 fill-purple-400" />
                     ))}

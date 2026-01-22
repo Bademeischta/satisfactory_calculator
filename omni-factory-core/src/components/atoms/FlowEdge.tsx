@@ -1,5 +1,7 @@
 import React, { memo } from 'react';
 import { BaseEdge, EdgeLabelRenderer, EdgeProps, getBezierPath } from 'reactflow';
+import { useFactoryStore } from '@/store/useFactoryStore';
+import { useStore } from '@/hooks/useStore';
 
 interface FlowEdgeData {
   flowRate: number;
@@ -26,10 +28,18 @@ function FlowEdge({
     targetPosition,
   });
 
+  const globalBeltTier = useStore(useFactoryStore, (state) => state.globalBeltTier) || 5;
+
   const flowRate = data?.flowRate || 0;
-  // Default capacity limit if not provided (Mk.1 Belt = 60, Mk.5 = 780)
-  // Ideally this comes from edge data, but we use a default for visualization if missing.
-  const limit = 780;
+
+  // Calculate Limit based on Global Tier Selection
+  let limit = 780;
+  if (globalBeltTier === 1) limit = 60;
+  if (globalBeltTier === 2) limit = 120;
+  if (globalBeltTier === 3) limit = 270;
+  if (globalBeltTier === 4) limit = 480;
+  if (globalBeltTier === 5) limit = 780;
+
   const utilization = flowRate / limit;
 
   // Determine Belt Tier

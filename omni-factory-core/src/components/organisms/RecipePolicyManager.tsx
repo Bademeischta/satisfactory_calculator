@@ -10,6 +10,8 @@ interface RecipePolicyManagerProps {
 export function RecipePolicyManager({ onClose }: RecipePolicyManagerProps) {
   const nodes = useFactoryStore((state) => state.nodes);
   const updateNodeData = useFactoryStore((state) => state.updateNodeData);
+  const globalBeltTier = useFactoryStore((state) => state.globalBeltTier);
+  const setGlobalBeltTier = useFactoryStore((state) => state.setGlobalBeltTier);
   const [searchTerm, setSearchTerm] = useState('');
 
   // 1. Identify all products being produced
@@ -94,7 +96,29 @@ export function RecipePolicyManager({ onClose }: RecipePolicyManagerProps) {
             </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-2">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+            {/* Logistics Settings */}
+            <div className="bg-[#2a2a2a] p-4 rounded border border-gray-700">
+                <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">Logistics Standards</h3>
+                <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400">Max Belt Tier (Global Limit)</span>
+                    <select
+                        className="bg-black border border-gray-600 rounded px-3 py-1 text-xs text-white focus:border-ficsit-orange outline-none"
+                        value={globalBeltTier || 5}
+                        onChange={(e) => setGlobalBeltTier(Number(e.target.value))}
+                    >
+                        <option value={1}>Mk.1 (60/m)</option>
+                        <option value={2}>Mk.2 (120/m)</option>
+                        <option value={3}>Mk.3 (270/m)</option>
+                        <option value={4}>Mk.4 (480/m)</option>
+                        <option value={5}>Mk.5 (780/m)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <h3 className="text-sm font-bold text-white mb-2 uppercase tracking-wider">Recipe Policies</h3>
             {filteredProducts.map(prod => {
                 let itemName = prod.itemSlug;
                 // eslint-disable-next-line no-empty
@@ -152,6 +176,7 @@ export function RecipePolicyManager({ onClose }: RecipePolicyManagerProps) {
             {filteredProducts.length === 0 && (
                 <div className="text-center text-gray-500 mt-10">No items found.</div>
             )}
+            </div>
         </div>
       </div>
     </div>

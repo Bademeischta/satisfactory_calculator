@@ -139,6 +139,15 @@ function FactoryCanvas() {
     }
   }, [selectNodeAction]);
 
+  const isValidConnection = useCallback(
+    (connection: Connection) =>
+        // Logic: Source Item Slug must match Target Item Slug
+        // In our system, handles ARE item slugs.
+        // e.g. sourceHandle="desc_iron_ore", targetHandle="desc_iron_ore"
+        connection.sourceHandle === connection.targetHandle
+    , []
+  );
+
   const onNodesDelete = useCallback((nodesToDelete: Node[]) => {
       nodesToDelete.forEach((node) => {
           removeNodeAction(node.id);
@@ -172,6 +181,7 @@ function FactoryCanvas() {
         onInit={setReactFlowInstance}
         onDrop={onDrop}
         onDragOver={onDragOver}
+        isValidConnection={isValidConnection}
         fitView
       >
         <Background color="#333" gap={16} size={1} />

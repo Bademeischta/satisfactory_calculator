@@ -80,7 +80,13 @@ function ResourceNode({ id, data, selected = false }: ResourceNodeProps) {
     // For Water, Purity is usually ignored (1.0).
     const effectivePurity = itemSlug === 'desc_water' ? 1.0 : purity;
 
-    return base * tierMult * effectivePurity * data.clockSpeed;
+    // Cap clock speed at 2.5 visual logic if needed, but resource node IS the machine.
+    // So output is capacity.
+    // If user sets clock > 2.5, we should probably cap it or allow it as "Cheating"?
+    // The directive says "Hard Cap clockSpeed visual calculation at 250%".
+    const effectiveClock = Math.min(data.clockSpeed, 2.5);
+
+    return base * tierMult * effectivePurity * effectiveClock;
   }, [itemSlug, tier, purity, data.clockSpeed]);
 
 
