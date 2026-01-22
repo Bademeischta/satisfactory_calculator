@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Handle, Position } from 'reactflow';
 import { Settings } from 'lucide-react';
 import { DB } from '@/lib/db';
+import { useFactoryStore } from '@/store/useFactoryStore';
 import { RecipeDefinition } from '@/types/data';
 
 interface FactoryNodeProps {
@@ -15,6 +16,9 @@ interface FactoryNodeProps {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
+  const [showRecipeMenu, setShowRecipeMenu] = React.useState(false);
+  const updateNodeData = useFactoryStore((state) => state.updateNodeData);
+
   let recipe: RecipeDefinition | undefined;
   try {
     recipe = DB.getRecipe(data.recipeId);
@@ -22,9 +26,7 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
     recipe = undefined;
   }
 
-  // Cleaned up logic: Slider moved to PropertyPanel
-
-  // If recipe not found (shouldn't happen in strict mode but good for safety), render fallback
+  // If recipe not found, render fallback
   if (!recipe) {
     return (
       <div className="w-64 bg-red-900 border-2 border-red-500 rounded p-4 text-white">
@@ -33,13 +35,49 @@ function FactoryNode({ id, data, selected = false }: FactoryNodeProps) {
     );
   }
 
+  // Determine alternate recipes for the primary product
+  const primaryProduct = recipe.products[0]?.itemSlug;
+  const alternateRecipes = primaryProduct
+    ? DB.getRecipesByProduct(primaryProduct).filter(r => r.id !== recipe!.id)
+    : [];
+
+  const handleRecipeChange = (newRecipeId: string) => {
+    updateNodeData(id, { recipeId: newRecipeId });
+    setShowRecipeMenu(false);
+  };
+
   return (
     <div
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setShowRecipeMenu(true);
+      }}
+      onMouseLeave={() => setShowRecipeMenu(false)}
       className={`
-        w-72 bg-ficsit-dark text-white rounded-md shadow-lg transition-all
+        w-72 bg-ficsit-dark text-white rounded-md shadow-lg transition-all relative
         ${selected ? 'border-2 border-ficsit-orange shadow-[0_0_10px_#FA9549]' : 'border border-ficsit-grey'}
       `}
     >
+      {/* Context Menu for Recipe Selection */}
+      {showRecipeMenu && alternateRecipes.length > 0 && (
+        <div className="absolute top-0 left-0 w-full z-50 bg-[#1e1e1e] border border-ficsit-orange rounded shadow-xl flex flex-col p-1 max-h-48 overflow-y-auto">
+           <div className="text-xs text-gray-400 px-2 py-1 border-b border-gray-700 mb-1">Switch Recipe</div>
+           {alternateRecipes.map(alt => (
+             <button
+                type="button"
+                key={alt.id}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleRecipeChange(alt.id);
+                }}
+                className="text-left text-xs px-2 py-1 hover:bg-ficsit-orange hover:text-black rounded"
+             >
+                {alt.name} {alt.alternate ? '(Alt)' : ''}
+             </button>
+           ))}
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-[#2A2A2A] p-2 rounded-t-md flex items-center justify-between border-b border-ficsit-grey">
         <div className="flex items-center gap-2 font-bold text-sm">
