@@ -15,7 +15,7 @@ import 'reactflow/dist/style.css';
 import { useFactoryStore } from '@/store/useFactoryStore';
 import FactoryNode from '@/components/molecules/FactoryNode';
 import FlowEdge from '@/components/atoms/FlowEdge';
-import { useSolver } from '@/hooks/useSolver';
+import { useFactorySimulation } from '@/hooks/useFactorySimulation';
 
 // Define node and edge types outside component to prevent re-creation
 const nodeTypes: NodeTypes = {
@@ -32,7 +32,7 @@ function FactoryCanvas() {
   } = useFactoryStore();
 
   // Activate the Solver
-  useSolver();
+  useFactorySimulation();
 
   const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
 

@@ -1,12 +1,12 @@
 import itemsData from '@/data/items.json';
 import buildingsData from '@/data/buildings.json';
 import recipesData from '@/data/recipes.json';
-import { ItemDefinition, BuildingDefinition, RecipeDefinition } from '@/types/data';
+import { ItemDefinition, BuildingMetaData, RecipeDefinition } from '@/types/data';
 
 // Cast to typed dictionaries
-const ITEMS = itemsData as Record<string, ItemDefinition>;
-const BUILDINGS = buildingsData as Record<string, BuildingDefinition>;
-const RECIPES = recipesData as Record<string, RecipeDefinition>;
+const ITEMS = itemsData as unknown as Record<string, ItemDefinition>;
+const BUILDINGS = buildingsData as unknown as Record<string, BuildingMetaData>;
+const RECIPES = recipesData as unknown as Record<string, RecipeDefinition>;
 
 export class DB {
   static getRecipe(id: string): RecipeDefinition {
@@ -26,7 +26,7 @@ export class DB {
     return item;
   }
 
-  static getBuilding(slug: string): BuildingDefinition {
+  static getBuilding(slug: string): BuildingMetaData {
     const building = BUILDINGS[slug];
     if (!building) {
       throw new Error(`[DB CRITICAL] Building Slug not found: ${slug}`);

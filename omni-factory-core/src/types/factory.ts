@@ -1,52 +1,54 @@
 /**
- * FICSIT Factory Types
- * Strictly typed interfaces for the Factory Core.
+ * FACTORY GRAPH TYPES
+ * Distinctions between User Intent and Physical Reality.
  */
 
-// -- Primitives --
-
-export interface RecipeItem {
-  itemSlug: string;
-  amount: number; // Items per minute or per cycle, context dependent
-}
-
-export interface Recipe {
-  id: string;
-  name: string;
-  ingredients: RecipeItem[];
-  products: RecipeItem[];
-  duration: number; // Seconds per cycle
-  producedIn: string[]; // Machine slugs (e.g., 'build_constructor')
-}
-
-// -- Graph Structure --
+// -- User Intent (Graph Topology) --
 
 export interface FactoryNode {
   id: string; // UUID
-  position: {
-    x: number;
-    y: number;
-  };
+  position: { x: number; y: number };
   recipeId: string;
   clockSpeed: number; // 1.0 = 100%, 2.5 = 250%
-  machineTier?: number; // Optional tier for belts/pipes logic
+  machineTier?: number; // e.g., Mk.1 vs Mk.2 Miner
+
+  // User overrides/constraints
+  targetOutput?: number; // "I want 10/min from this specific node"
+  priority?: number; // For priority merging logic
 }
 
 export interface FactoryEdge {
-  id: string; // UUID for the edge itself
+  id: string; // UUID
   sourceNodeId: string;
+  sourceHandle: string; // itemSlug
   targetNodeId: string;
-  itemSlug: string;
-  flowRate: number; // Items per minute
+  targetHandle: string; // itemSlug
+
+  // Physical Limit of the transport medium (Belt/Pipe)
+  limitRate?: number; // e.g., 60, 120, 300, 600, 1200
 }
 
-export interface FactoryGraph {
-  nodes: FactoryNode[];
-  edges: FactoryEdge[];
+// -- Simulation Reality (Computed Results) --
+
+export interface SimulationEdgeResult {
+  edgeId: string;
+  flowRate: number; // The actual calculated flow
+  isBottleneck: boolean; // True if flowRate >= limitRate
 }
 
-export interface FactorySolution {
-  solvedNodes: FactoryNode[]; // Nodes with updated potential data (e.g. efficiency)
-  solvedEdges: FactoryEdge[]; // Edges with calculated flow rates
-  unresolvedDependencies: string[];
+export interface SimulationNodeResult {
+  nodeId: string;
+  actualRunRate: number; // 0.0 to clockSpeed (Efficiency)
+  powerDraw: number; // MW
+  efficiency: number; // percentage (0-100)
+  warnings: string[]; // e.g., "Missing Input: Coal"
+}
+
+export interface SimulationResult {
+  nodes: Record<string, SimulationNodeResult>;
+  edges: Record<string, SimulationEdgeResult>;
+  totalPower: number; // MW
+  totalPoints: number; // Awesome Sink points/min
+  solved: boolean;
+  errors: string[];
 }

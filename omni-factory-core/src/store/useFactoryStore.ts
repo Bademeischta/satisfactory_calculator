@@ -1,10 +1,14 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { FactoryNode, FactoryEdge } from '@/types/factory';
+import { FactoryNode, FactoryEdge, SimulationResult } from '@/types/factory';
 
 interface FactoryState {
+  // User Intent
   nodes: FactoryNode[];
   edges: FactoryEdge[];
+
+  // Simulation Reality
+  simulation: SimulationResult | null;
 
   // Actions
   addNode: (recipeId: string, position: { x: number; y: number }) => void;
@@ -12,20 +16,18 @@ interface FactoryState {
   connectNodes: (sourceId: string, targetId: string, itemSlug: string) => void;
   updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   updateNodeData: (id: string, data: Partial<FactoryNode>) => void;
-  setEdgeFlowRates: (flowRates: Record<string, number>) => void;
+
+  // Set Simulation Result
+  setSimulationResult: (result: SimulationResult) => void;
 }
 
 export const useFactoryStore = create<FactoryState>((set) => ({
   nodes: [],
   edges: [],
+  simulation: null,
 
-  setEdgeFlowRates: (flowRates) => {
-    set((state) => ({
-      edges: state.edges.map((edge) => ({
-        ...edge,
-        flowRate: flowRates[edge.id] ?? edge.flowRate,
-      })),
-    }));
+  setSimulationResult: (result) => {
+    set({ simulation: result });
   },
 
   updateNodeData: (id, data) => {
