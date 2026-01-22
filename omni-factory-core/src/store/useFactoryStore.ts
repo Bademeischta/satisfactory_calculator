@@ -26,6 +26,10 @@ interface FactoryState {
   layoutNodes: () => void;
   importStateFromUrl: (urlSearch: string) => boolean;
 
+  // Logistics
+  globalBeltTier: number;
+  setGlobalBeltTier: (tier: number) => void;
+
   // Set Simulation Result
   setSimulationResult: (result: SimulationResult) => void;
 }
@@ -37,6 +41,11 @@ export const useFactoryStore = create<FactoryState>()(
       edges: [],
       simulation: null,
       selectedNodeId: null,
+      globalBeltTier: 5, // Default Mk.5
+
+      setGlobalBeltTier: (tier) => {
+          set({ globalBeltTier: tier });
+      },
 
       selectNode: (id) => {
         set({ selectedNodeId: id });
@@ -53,17 +62,23 @@ export const useFactoryStore = create<FactoryState>()(
       },
 
       addNode: (recipeId, position) => {
-        set((state) => ({
-          nodes: [
-            ...state.nodes,
-            {
-              id: uuidv4(),
-              recipeId,
-              position,
-              clockSpeed: 1.0,
-            },
-          ],
-        }));
+        set((state) => {
+          const isResource = recipeId.startsWith('desc_');
+          return {
+            nodes: [
+              ...state.nodes,
+              {
+                id: uuidv4(),
+                type: isResource ? 'resourceNode' : 'factoryNode',
+                recipeId,
+                position,
+                clockSpeed: 1.0,
+                // Default props for resource node
+                ...(isResource ? { purity: 1.0, machineTier: 1 } : {})
+              },
+            ],
+          };
+        });
       },
 
       removeNode: (id) => {

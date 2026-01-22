@@ -20,9 +20,20 @@ function getRecipesByBuilding() {
   return groups;
 }
 
+const RAW_RESOURCES = [
+  { slug: 'desc_iron_ore', name: 'Iron Ore' },
+  { slug: 'desc_copper_ore', name: 'Copper Ore' },
+  { slug: 'desc_coal', name: 'Coal' },
+  { slug: 'desc_stone', name: 'Stone' },
+  { slug: 'desc_limestone', name: 'Limestone' },
+  { slug: 'desc_water', name: 'Water' },
+  { slug: 'desc_liquid_oil', name: 'Crude Oil' },
+];
+
 export function BuilderSidebar() {
   const [groups] = useState(getRecipesByBuilding());
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    'raw_resources': true,
     'build_smelter': true,
     'build_constructor': true,
   });
@@ -66,6 +77,40 @@ export function BuilderSidebar() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
+        {/* Raw Resources Category */}
+        <div className="border border-gray-800 rounded bg-[#1A1A1A] overflow-hidden">
+            <button
+                type="button"
+                onClick={() => toggleGroup('raw_resources')}
+                className="w-full flex items-center justify-between p-2 text-xs font-bold text-ficsit-orange hover:bg-[#252525] transition-colors"
+            >
+                <span>Raw Resources</span>
+                {expanded.raw_resources ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+            </button>
+
+            {expanded.raw_resources && (
+                <div className="p-2 grid grid-cols-4 gap-2 bg-[#111]">
+                    {RAW_RESOURCES.map(res => (
+                         <div
+                            key={res.slug}
+                            draggable
+                            onDragStart={(e) => onDragStart(e, res.slug)}
+                            className="aspect-square bg-gray-800 rounded border border-gray-700 hover:border-ficsit-orange cursor-grab active:cursor-grabbing flex items-center justify-center relative group"
+                         >
+                            <span className="text-[10px] font-bold text-gray-400 group-hover:text-white">
+                                {res.name.substring(0, 2)}
+                            </span>
+                            {/* Tooltip */}
+                            <div className="absolute left-full top-0 ml-2 z-50 w-32 bg-black border border-ficsit-orange p-2 rounded shadow-xl hidden group-hover:block pointer-events-none">
+                                <div className="text-ficsit-orange font-bold text-xs">{res.name}</div>
+                                <div className="text-[10px] text-gray-400">Drag to add Miner</div>
+                            </div>
+                         </div>
+                    ))}
+                </div>
+            )}
+        </div>
+
         {Object.entries(groups).map(([buildingSlug, recipes]) => (
             <div key={buildingSlug} className="border border-gray-800 rounded bg-[#1A1A1A] overflow-hidden">
                 <button
