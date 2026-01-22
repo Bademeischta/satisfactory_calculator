@@ -1,18 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useFactoryStore } from '@/store/useFactoryStore';
+import { useStore } from '@/hooks/useStore';
 import { DB } from '@/lib/db';
 import { Activity, XCircle, Zap } from 'lucide-react';
 import { RecipeDefinition } from '@/types/data';
 
 export function PropertyPanel() {
-  const selectedNodeId = useFactoryStore((state) => state.selectedNodeId);
-  const nodes = useFactoryStore((state) => state.nodes);
-  const simulation = useFactoryStore((state) => state.simulation);
+  const selectedNodeId = useStore(useFactoryStore, (state) => state.selectedNodeId);
+  const nodes = useStore(useFactoryStore, (state) => state.nodes);
+  const simulation = useStore(useFactoryStore, (state) => state.simulation);
+
+  // Actions
   const updateNodeData = useFactoryStore((state) => state.updateNodeData);
   const removeNode = useFactoryStore((state) => state.removeNode);
   const selectNode = useFactoryStore((state) => state.selectNode);
 
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const selectedNode = nodes?.find((n) => n.id === selectedNodeId);
 
   // Local state for slider
   const [localClock, setLocalClock] = useState(1.0);

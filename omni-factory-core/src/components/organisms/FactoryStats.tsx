@@ -1,10 +1,13 @@
 import React from 'react';
 import { useFactoryStore } from '@/store/useFactoryStore';
+import { useStore } from '@/hooks/useStore';
 import { Zap, Package, Cpu } from 'lucide-react';
 
 export function FactoryStats() {
-  const simulation = useFactoryStore((state) => state.simulation);
-  const nodeCount = useFactoryStore((state) => state.nodes.length);
+  // Use safe hydration hook
+  const simulation = useStore(useFactoryStore, (state) => state.simulation);
+  const nodes = useStore(useFactoryStore, (state) => state.nodes);
+  const nodeCount = nodes?.length || 0;
 
   const totalPower = simulation?.totalPower || 0;
   // Sum of output flow rates? Or specific objective value?

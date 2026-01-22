@@ -14,6 +14,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useFactoryStore } from '@/store/useFactoryStore';
+import { useStore } from '@/hooks/useStore';
 import FactoryNode from '@/components/molecules/FactoryNode';
 import FlowEdge from '@/components/atoms/FlowEdge';
 import { useFactorySimulation } from '@/hooks/useFactorySimulation';
@@ -28,9 +29,39 @@ const edgeTypes: EdgeTypes = {
 };
 
 function FactoryCanvas() {
-  const {
-    nodes, edges, connectNodes, removeNode, updateNodePosition, addNode, selectNode,
-  } = useFactoryStore();
+  const store = useStore(useFactoryStore, (state) => state);
+
+  // Use useMemo to stabilize the array reference if store changes but nodes/edges arrays are new instances
+  // Actually, useStore returns a new object on every store update.
+  // The correct fix for the linter warning is to not rely on logical OR inside the useMemo dependency array.
+  // We can just trust useStore's return value or memoize the extraction.
+
+  const nodes = React.useMemo(() => store?.nodes || [], [store?.nodes]);
+  const edges = React.useMemo(() => store?.edges || [], [store?.edges]);
+
+  // Actions usually don't need hydration safety as they are functions, but we get them from the safe store or direct.
+  // Actually, actions are stable. We can access them directly from the hook or the store.
+  // But to be consistent and safe, we can pull them from the store hook if possible, or just use the non-hook usage for actions.
+  // However, useStore returns the state.
+  // Let's grab actions directly as they don't cause hydration mismatch (they are functions).
+  // const {
+  //   connectNodes, removeNode, updateNodePosition, addNode, selectNode,
+  // } = useFactoryStore.getState();
+  // Wait, relying on getState() inside render might be risky if we expect updates.
+  // But actions don't change.
+  // Better pattern: useFactoryStore(state => state.action) is fine.
+  // The hydration issue is about DATA.
+
+  // Let's use the hook for data, and standard hook for actions?
+  // Or just check if store is defined.
+
+  // Use useFactoryStore directly for actions to keep it clean,
+  // assuming actions are not part of the hydration mismatch problem (they aren't serialized).
+  const connectNodesAction = useFactoryStore((s) => s.connectNodes);
+  const removeNodeAction = useFactoryStore((s) => s.removeNode);
+  const updateNodePositionAction = useFactoryStore((s) => s.updateNodePosition);
+  const addNodeAction = useFactoryStore((s) => s.addNode);
+  const selectNodeAction = useFactoryStore((s) => s.selectNode);
 
   // Activate the Solver
   useFactorySimulation();
@@ -38,6 +69,7 @@ function FactoryCanvas() {
   const [reactFlowInstance, setReactFlowInstance] = React.useState<ReactFlowInstance | null>(null);
 
   // Map Zustand store nodes to React Flow nodes
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const flowNodes: Node[] = useMemo(() => nodes.map((node) => ({
     id: node.id,
     type: 'factoryNode',
@@ -49,6 +81,7 @@ function FactoryCanvas() {
   })), [nodes]);
 
   // Map Zustand store edges to React Flow edges
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const flowEdges: Edge[] = useMemo(() => edges.map((edge) => ({
     id: edge.id,
     source: edge.sourceNodeId,
@@ -63,9 +96,9 @@ function FactoryCanvas() {
   const onConnect = useCallback((params: Connection) => {
     if (params.source && params.target && params.sourceHandle) {
         // sourceHandle is the itemSlug
-        connectNodes(params.source, params.target, params.sourceHandle);
+        connectNodesAction(params.source, params.target, params.sourceHandle);
     }
-  }, [connectNodes]);
+  }, [connectNodesAction]);
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -87,36 +120,36 @@ function FactoryCanvas() {
         y: event.clientY,
       });
 
-      addNode(recipeId, position);
+      addNodeAction(recipeId, position);
     },
-    [reactFlowInstance, addNode],
+    [reactFlowInstance, addNodeAction],
   );
 
   const onSelectionChange = useCallback((params: OnSelectionChangeParams) => {
     // We only care about single node selection for the property panel for now
     if (params.nodes.length > 0) {
-        selectNode(params.nodes[0].id);
+        selectNodeAction(params.nodes[0].id);
     } else {
-        selectNode(null);
+        selectNodeAction(null);
     }
-  }, [selectNode]);
+  }, [selectNodeAction]);
 
   const onNodesDelete = useCallback((nodesToDelete: Node[]) => {
       nodesToDelete.forEach((node) => {
-          removeNode(node.id);
+          removeNodeAction(node.id);
       });
-  }, [removeNode]);
+  }, [removeNodeAction]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
       // We only care about position changes for the store
       changes.forEach((change) => {
         if (change.type === 'position' && change.position) {
-            updateNodePosition(change.id, change.position);
+            updateNodePositionAction(change.id, change.position);
         }
       });
     },
-    [updateNodePosition]
+    [updateNodePositionAction]
   );
 
   return (

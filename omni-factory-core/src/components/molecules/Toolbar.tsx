@@ -4,6 +4,7 @@ import { Trash2, Network } from 'lucide-react';
 
 export function Toolbar() {
   const clearFactory = useFactoryStore((state) => state.clearFactory);
+  const layoutNodes = useFactoryStore((state) => state.layoutNodes);
 
   const handleClear = () => {
     // eslint-disable-next-line no-alert
@@ -31,11 +32,11 @@ export function Toolbar() {
 
       <button
         type="button"
-        className="flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-bold cursor-not-allowed group"
-        disabled
+        onClick={layoutNodes}
+        className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors text-sm font-bold group hover:text-ficsit-orange"
       >
-        <Network className="w-4 h-4" />
-        <span>Auto-Layout (WIP)</span>
+        <Network className="w-4 h-4 group-hover:scale-110 transition-transform" />
+        <span>Auto-Layout</span>
       </button>
     </div>
   );
