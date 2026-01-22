@@ -1,0 +1,127 @@
+{
+  "recipe_iron_ingot": {
+    "id": "recipe_iron_ingot",
+    "name": "Iron Ingot",
+    "ingredients": [
+      {
+        "itemSlug": "desc_iron_ore",
+        "amount": 30,
+        "originalAmount": 1
+      }
+    ],
+    "products": [
+      {
+        "itemSlug": "desc_iron_ingot",
+        "amount": 30,
+        "originalAmount": 1
+      }
+    ],
+    "duration": 2,
+    "producedIn": [
+      "build_smelter"
+    ],
+    "alternate": false,
+    "inMachine": true
+  },
+  "recipe_iron_plate": {
+    "id": "recipe_iron_plate",
+    "name": "Iron Plate",
+    "ingredients": [
+      {
+        "itemSlug": "desc_iron_ingot",
+        "amount": 30,
+        "originalAmount": 3
+      }
+    ],
+    "products": [
+      {
+        "itemSlug": "desc_iron_plate",
+        "amount": 20,
+        "originalAmount": 2
+      }
+    ],
+    "duration": 6,
+    "producedIn": [
+      "build_constructor"
+    ],
+    "alternate": false,
+    "inMachine": true
+  },
+  "recipe_iron_rod": {
+    "id": "recipe_iron_rod",
+    "name": "Iron Rod",
+    "ingredients": [
+      {
+        "itemSlug": "desc_iron_ingot",
+        "amount": 15,
+        "originalAmount": 1
+      }
+    ],
+    "products": [
+      {
+        "itemSlug": "desc_iron_rod",
+        "amount": 15,
+        "originalAmount": 1
+      }
+    ],
+    "duration": 4,
+    "producedIn": [
+      "build_constructor"
+    ],
+    "alternate": false,
+    "inMachine": true
+  },
+  "recipe_screw": {
+    "id": "recipe_screw",
+    "name": "Screw",
+    "ingredients": [
+      {
+        "itemSlug": "desc_iron_rod",
+        "amount": 10,
+        "originalAmount": 1
+      }
+    ],
+    "products": [
+      {
+        "itemSlug": "desc_screw",
+        "amount": 40,
+        "originalAmount": 4
+      }
+    ],
+    "duration": 6,
+    "producedIn": [
+      "build_constructor"
+    ],
+    "alternate": false,
+    "inMachine": true
+  },
+  "recipe_reinforced_iron_plate": {
+    "id": "recipe_reinforced_iron_plate",
+    "name": "Reinforced Iron Plate",
+    "ingredients": [
+      {
+        "itemSlug": "desc_iron_plate",
+        "amount": 30,
+        "originalAmount": 6
+      },
+      {
+        "itemSlug": "desc_screw",
+        "amount": 60,
+        "originalAmount": 12
+      }
+    ],
+    "products": [
+      {
+        "itemSlug": "desc_reinforced_iron_plate",
+        "amount": 5,
+        "originalAmount": 1
+      }
+    ],
+    "duration": 12,
+    "producedIn": [
+      "build_assembler"
+    ],
+    "alternate": false,
+    "inMachine": true
+  }
+}

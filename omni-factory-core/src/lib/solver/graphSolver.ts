@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FactoryNode, FactoryEdge, FactorySolution } from '@/types/factory';
-import { RECIPE_DB } from '@/data/sample-recipes';
 import solver from 'javascript-lp-solver';
+import { DB } from '@/lib/db';
 
 /**
  * Solves the factory graph using Linear Programming (Simplex Method).
@@ -22,8 +22,12 @@ export function solveFactoryGraph(nodes: FactoryNode[], edges: FactoryEdge[]): F
   // 2. Build Variables (Nodes)
   // Each node has a variable representing its utilization multiplier (0.0 to ClockSpeed).
   nodes.forEach((node) => {
-    const recipe = RECIPE_DB[node.recipeId];
-    if (!recipe) return;
+    try {
+      // Just check existence
+      DB.getRecipe(node.recipeId);
+    } catch {
+      return;
+    }
 
     // The variable for this node. Let's call it by its UUID.
     // It contributes 1 to the 'total_utilization' objective.
@@ -54,10 +58,14 @@ export function solveFactoryGraph(nodes: FactoryNode[], edges: FactoryEdge[]): F
 
     if (!sourceNode || !targetNode) return;
 
-    const sourceRecipe = RECIPE_DB[sourceNode.recipeId];
-    const targetRecipe = RECIPE_DB[targetNode.recipeId];
-
-    if (!sourceRecipe || !targetRecipe) return;
+    let sourceRecipe;
+    let targetRecipe;
+    try {
+      sourceRecipe = DB.getRecipe(sourceNode.recipeId);
+      targetRecipe = DB.getRecipe(targetNode.recipeId);
+    } catch {
+      return;
+    }
 
     // Find the rates for the specific itemSlug
     const product = sourceRecipe.products.find((p) => p.itemSlug === edge.itemSlug);
@@ -101,7 +109,12 @@ export function solveFactoryGraph(nodes: FactoryNode[], edges: FactoryEdge[]): F
     const targetNode = nodes.find((n) => n.id === edge.targetNodeId);
     if (!targetNode) return { ...edge, flowRate: 0 };
 
-    const targetRecipe = RECIPE_DB[targetNode.recipeId];
+    let targetRecipe;
+    try {
+      targetRecipe = DB.getRecipe(targetNode.recipeId);
+    } catch {
+      return { ...edge, flowRate: 0 };
+    }
     const ingredient = targetRecipe?.ingredients.find((i) => i.itemSlug === edge.itemSlug);
 
     const utilization = results[targetNode.id] || 0;
